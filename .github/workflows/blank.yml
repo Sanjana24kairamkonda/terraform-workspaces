@@ -9,17 +9,14 @@ jobs:
   terraform-dev:
     runs-on: ubuntu-latest
     steps:
-    # Step 1: Checkout the code
     - name: Checkout repository
       uses: actions/checkout@v2
 
-    # Step 2: Set up Terraform CLI
     - name: Set up Terraform
       uses: hashicorp/setup-terraform@v1
       with:
         terraform_version: '1.3.7'
 
-    # Step 3: Authenticate to GCP
     - name: Authenticate to GCP
       run: |
         echo "${{ secrets.GCP_SA_KEY }}" | base64 --decode > gcp-key.json
@@ -27,27 +24,33 @@ jobs:
         gcloud auth activate-service-account --key-file=gcp-key.json
         gcloud config set project ${{ secrets.GCP_PROJECT_ID }}
 
-    # Step 4: Select the dev workspace and run Terraform commands
     - name: Select Terraform Workspace (dev)
       run: |
         terraform workspace select dev || terraform workspace new dev
-        terraform init
+        terraform init -backend-config=./dev/backend-dev.tf  # Specify the backend config for dev
+
+    - name: Terraform Plan (dev)
+      working-directory: ./dev  # Change working directory to the dev folder
+      run: |
+        terraform plan -var-file=./dev/terraform.tfvars
+
+    - name: Terraform Apply (dev)
+      working-directory: ./dev  # Change working directory to the dev folder
+      run: |
         terraform apply -auto-approve -var-file=./dev/terraform.tfvars
 
   terraform-stage:
     runs-on: ubuntu-latest
+    needs: terraform-dev  # This makes terraform-stage depend on terraform-dev
     steps:
-    # Step 1: Checkout the code
     - name: Checkout repository
       uses: actions/checkout@v2
 
-    # Step 2: Set up Terraform CLI
     - name: Set up Terraform
       uses: hashicorp/setup-terraform@v1
       with:
         terraform_version: '1.3.7'
 
-    # Step 3: Authenticate to GCP
     - name: Authenticate to GCP
       run: |
         echo "${{ secrets.GCP_SA_KEY }}" | base64 --decode > gcp-key.json
@@ -55,11 +58,17 @@ jobs:
         gcloud auth activate-service-account --key-file=gcp-key.json
         gcloud config set project ${{ secrets.GCP_PROJECT_ID }}
 
-    # Step 4: Select the stage workspace and run Terraform commands
     - name: Select Terraform Workspace (stage)
       run: |
         terraform workspace select stage || terraform workspace new stage
-        terraform init
-        terraform apply -auto-approve -var-file=./stage/terraform.tfvars
+        terraform init -backend-config=./stage/backend-stage.tf  # Specify the backend config for stage
 
- 
+    - name: Terraform Plan (stage)
+      working-directory: ./stage  # Change working directory to the stage folder
+      run: |
+        terraform plan -var-file=./stage/terraform.tfvars
+
+    - name: Terraform Apply (stage)
+      working-directory: ./stage  # Change working directory to the stage folder
+      run: |
+        terraform apply -auto-approve -var-file=./stage/terraform.tfvars
