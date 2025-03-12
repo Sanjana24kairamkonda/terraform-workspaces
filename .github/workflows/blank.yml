@@ -3,7 +3,7 @@ name: Terraform Workspaces Setup
 on:
   push:
     branches:
-      - main  # or any other branch you want to trigger for deploying
+      - main
 
 jobs:
   terraform-dev:
@@ -27,21 +27,21 @@ jobs:
     - name: Select Terraform Workspace (dev)
       run: |
         terraform workspace select dev || terraform workspace new dev
-        terraform init -backend-config=./dev/backend-dev.tf  # Specify the backend config for dev
+        terraform init -backend-config=./dev/backend.tf -reconfigure  # Reconfigure the backend
 
     - name: Terraform Plan (dev)
-      working-directory: ./dev  # Change working directory to the dev folder
+      working-directory: ./dev
       run: |
         terraform plan -var-file=./dev/terraform.tfvars
 
     - name: Terraform Apply (dev)
-      working-directory: ./dev  # Change working directory to the dev folder
+      working-directory: ./dev
       run: |
         terraform apply -auto-approve -var-file=./dev/terraform.tfvars
 
   terraform-stage:
     runs-on: ubuntu-latest
-    needs: terraform-dev  # This makes terraform-stage depend on terraform-dev
+    needs: terraform-dev
     steps:
     - name: Checkout repository
       uses: actions/checkout@v2
@@ -61,14 +61,14 @@ jobs:
     - name: Select Terraform Workspace (stage)
       run: |
         terraform workspace select stage || terraform workspace new stage
-        terraform init -backend-config=./stage/backend-stage.tf  # Specify the backend config for stage
+        terraform init -backend-config=./stage/backend.tf -reconfigure  # Reconfigure the backend
 
     - name: Terraform Plan (stage)
-      working-directory: ./stage  # Change working directory to the stage folder
+      working-directory: ./stage
       run: |
         terraform plan -var-file=./stage/terraform.tfvars
 
     - name: Terraform Apply (stage)
-      working-directory: ./stage  # Change working directory to the stage folder
+      working-directory: ./stage
       run: |
         terraform apply -auto-approve -var-file=./stage/terraform.tfvars
