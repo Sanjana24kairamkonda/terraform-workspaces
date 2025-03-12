@@ -27,7 +27,11 @@ jobs:
     - name: Select Terraform Workspace (dev)
       run: |
         terraform workspace select dev || terraform workspace new dev
-        terraform init -backend-config=./dev/backend.tf -reconfigure  # Reconfigure the backend
+        
+    - name: Terraform init (dev)
+      working-directory: ./dev
+      run: |
+        terraform init
 
     - name: Terraform Plan (dev)
       working-directory: ./dev
@@ -61,7 +65,11 @@ jobs:
     - name: Select Terraform Workspace (stage)
       run: |
         terraform workspace select stage || terraform workspace new stage
-        terraform init -backend-config=./stage/backend.tf -reconfigure  # Reconfigure the backend
+     
+    - name: Terraform init (stage)
+      working-directory: ./stage
+      run: |
+        terraform init
 
     - name: Terraform Plan (stage)
       working-directory: ./stage
