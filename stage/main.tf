@@ -24,12 +24,3 @@ resource "google_compute_instance" "example" {
 
   tags = ["${terraform.workspace}"]
 }
-
-resource "google_storage_bucket" "example" {
-  name     = "example-bucket-${terraform.workspace}"
-  location = "US"
-
-  versioning {
-    enabled = true
-  }
-}
