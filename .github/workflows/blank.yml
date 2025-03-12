@@ -38,12 +38,12 @@ jobs:
     - name: Terraform Plan (dev)
       working-directory: ./dev
       run: |
-        terraform plan -var-file=./dev/terraform.tfvars
+        terraform plan -var-file=terraform.tfvars
 
     - name: Terraform Apply (dev)
       working-directory: ./dev
       run: |
-        terraform apply -auto-approve -var-file=./dev/terraform.tfvars
+        terraform apply -auto-approve -var-file=terraform.tfvars
 
   terraform-stage:
     runs-on: ubuntu-latest
@@ -78,9 +78,9 @@ jobs:
     - name: Terraform Plan (stage)
       working-directory: ./stage
       run: |
-        terraform plan -var-file=./stage/terraform.tfvars
+        terraform plan -var-file=terraform.tfvars
 
     - name: Terraform Apply (stage)
       working-directory: ./stage
       run: |
-        terraform apply -auto-approve -var-file=./stage/terraform.tfvars
+        terraform apply -auto-approve -var-file=terraform.tfvars
