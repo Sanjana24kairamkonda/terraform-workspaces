@@ -6,7 +6,7 @@ on:
       - main
 
 jobs:
-  terraform-dev:
+  terraform:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout repository
@@ -20,63 +20,61 @@ jobs:
     - name: Authenticate to GCP
       run: |
         echo "${{ secrets.GCP_SA_KEY }}" | base64 --decode > gcp-key.json
-        echo "GOOGLE_APPLICATION_CREDENTIALS=gcp-key.json" >> $GITHUB_ENV
+        chmod 600 gcp-key.json  # Ensure the key file has the right permissions
+        echo "GOOGLE_APPLICATION_CREDENTIALS=gcp-key.json" >> $GITHUB_ENV  # Set the environment variable for later steps
         gcloud auth activate-service-account --key-file=gcp-key.json
         gcloud config set project ${{ secrets.GCP_PROJECT_ID }}
 
     - name: Select Terraform Workspace (dev)
       run: |
         terraform workspace select dev || terraform workspace new dev
-        
+      env:
+        GOOGLE_APPLICATION_CREDENTIALS: gcp-key.json  # Explicitly pass the env variable
+
     - name: Terraform init (dev)
       working-directory: ./dev
       run: |
         terraform init
+      env:
+        GOOGLE_APPLICATION_CREDENTIALS: gcp-key.json  # Explicitly pass the env variable
 
     - name: Terraform Plan (dev)
       working-directory: ./dev
       run: |
         terraform plan -var-file=./dev/terraform.tfvars
+      env:
+        GOOGLE_APPLICATION_CREDENTIALS: gcp-key.json  # Explicitly pass the env variable
 
     - name: Terraform Apply (dev)
       working-directory: ./dev
       run: |
         terraform apply -auto-approve -var-file=./dev/terraform.tfvars
-
-  terraform-stage:
-    runs-on: ubuntu-latest
-    needs: terraform-dev
-    steps:
-    - name: Checkout repository
-      uses: actions/checkout@v2
-
-    - name: Set up Terraform
-      uses: hashicorp/setup-terraform@v1
-      with:
-        terraform_version: '1.3.7'
-
-    - name: Authenticate to GCP
-      run: |
-        echo "${{ secrets.GCP_SA_KEY }}" | base64 --decode > gcp-key.json
-        echo "GOOGLE_APPLICATION_CREDENTIALS=gcp-key.json" >> $GITHUB_ENV
-        gcloud auth activate-service-account --key-file=gcp-key.json
-        gcloud config set project ${{ secrets.GCP_PROJECT_ID }}
+      env:
+        GOOGLE_APPLICATION_CREDENTIALS: gcp-key.json  # Explicitly pass the env variable
 
     - name: Select Terraform Workspace (stage)
       run: |
         terraform workspace select stage || terraform workspace new stage
-     
+      env:
+        GOOGLE_APPLICATION_CREDENTIALS: gcp-key.json  # Explicitly pass the env variable
+
     - name: Terraform init (stage)
       working-directory: ./stage
       run: |
         terraform init
+      env:
+        GOOGLE_APPLICATION_CREDENTIALS: gcp-key.json  # Explicitly pass the env variable
 
     - name: Terraform Plan (stage)
       working-directory: ./stage
       run: |
         terraform plan -var-file=./stage/terraform.tfvars
+      env:
+        GOOGLE_APPLICATION_CREDENTIALS: gcp-key.json  # Explicitly pass the env variable
 
     - name: Terraform Apply (stage)
       working-directory: ./stage
       run: |
         terraform apply -auto-approve -var-file=./stage/terraform.tfvars
+      env:
+        GOOGLE_APPLICATION_CREDENTIALS: gcp-key.json  # Explicitly pass the env variable
