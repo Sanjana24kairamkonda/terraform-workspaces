@@ -25,15 +25,15 @@ jobs:
         gcloud auth activate-service-account --key-file=gcp-key.json
         gcloud config set project ${{ secrets.GCP_PROJECT_ID }}
 
-    - name: Select Terraform Workspace (dev)
-      working-directory: ./dev  
-      run: |
-        terraform workspace select dev || terraform workspace new dev
-    
     - name: Terraform init (dev)
       working-directory: ./dev
       run: |
         terraform init
+
+    - name: Select Terraform Workspace (dev)
+      working-directory: ./dev  
+      run: |
+        terraform workspace select dev || terraform workspace new dev
 
     - name: Terraform Plan (dev)
       working-directory: ./dev
@@ -65,15 +65,15 @@ jobs:
         gcloud auth activate-service-account --key-file=gcp-key.json
         gcloud config set project ${{ secrets.GCP_PROJECT_ID }}
 
-    - name: Select Terraform Workspace (stage)
-      working-directory: ./stage
-      run: |
-        terraform workspace select stage || terraform workspace new stage
-
     - name: Terraform init (stage)
       working-directory: ./stage
       run: |
         terraform init
+
+    - name: Select Terraform Workspace (stage)
+      working-directory: ./stage
+      run: |
+        terraform workspace select stage || terraform workspace new stage
 
     - name: Terraform Plan (stage)
       working-directory: ./stage
